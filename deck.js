@@ -104,7 +104,6 @@
     var W = vw(), H = vh();
     var o = d.createElement('div');
     o.style.cssText = 'position:fixed;inset:0;background:#000;z-index:2147483647;overflow:hidden';
-    d.documentElement.style.background = '#000'; theme('#000');
     var k = d.createElement('div');
     k.style.cssText = 'position:absolute;left:0;top:0;width:' + W + 'px;height:' + H + 'px';
     o.appendChild(k);
@@ -204,7 +203,6 @@
       ov.style.cssText = 'position:fixed;left:' + r.left + 'px;top:' + r.top + 'px;width:' + r.width + 'px;height:' + r.height +
         'px;background:' + bg + ';z-index:2147483647;pointer-events:none;transition:left 650ms ' + E + ',top 650ms ' + E + ',width 650ms ' + E + ',height 650ms ' + E;
       d.documentElement.appendChild(ov);            // on <html> so body swap won't remove it
-      theme(bg);
       raf(function () { raf(function () {
         ov.style.left = '0px'; ov.style.top = '0px'; ov.style.width = window.innerWidth + 'px'; ov.style.height = window.innerHeight + 'px';
       }); });
@@ -374,7 +372,6 @@
   }
   function introIn() {
     var L = buildLoader(); d.documentElement.appendChild(L.el);     // dark loader behind (z0)
-    theme('#111');
     var x = introHolder(0); d.documentElement.appendChild(x.holder);
     x.holder.style.transform = 'translateY(' + x.H + 'px) scale(0.25)'; // small, below
     var t0 = Date.now(), min = 900;
@@ -388,7 +385,6 @@
           x.clip.style.transition = 'border-radius 1400ms ' + E; x.clip.style.borderRadius = '0px';
           setTimeout(function () {
             d.documentElement.className = d.documentElement.className.replace(/\s*nmdw-pre/, ''); // reveal real page
-            theme(pageBg());
             if (x.holder.parentNode) x.holder.parentNode.removeChild(x.holder);
             if (L.el.parentNode) L.el.parentNode.removeChild(L.el);
           }, 1420);
@@ -401,7 +397,6 @@
   function introOut(cb) {
     if (busy) return; busy = true;
     var L = buildLoader(); d.documentElement.appendChild(L.el);
-    theme('#111'); d.documentElement.style.background = '#111';
     var x = introHolder(pageYOffset); d.documentElement.appendChild(x.holder);
     x.clip.style.borderRadius = '0px';                              // starts as full page (square)
     d.body.style.opacity = '0';                                     // hide real page behind the card
@@ -438,13 +433,13 @@
     pre.textContent = 'html.nmdw-pre{background:#111}html.nmdw-pre>body{opacity:0}';
     (d.head || d.documentElement).appendChild(pre);
     d.documentElement.className += ' nmdw-pre';
-    theme('#111');
   } else {
     var fst = d.createElement('style');
     fst.textContent = 'html.nmdw-fade>body{opacity:0;filter:blur(10px)}';
     (d.head || d.documentElement).appendChild(fst);
     d.documentElement.className += ' nmdw-fade';
   }
+  theme('#FAF8F3');                                  // lock iOS Safari UI to one constant colour (no flashing)
   function boot() {
     if (INTRO) introIn(); else simpleIn();
     if (is404()) {

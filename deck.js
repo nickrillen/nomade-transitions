@@ -125,6 +125,8 @@
         k.style.transform = st(bi, S);
         setTimeout(function () {
           k.style.transform = st(bi, 1);
+          var tc = cards[bi] && cards[bi].children[0];   // active card's clip
+          if (tc) { tc.style.transition = 'border-radius ' + D + 'ms ' + E; tc.style.borderRadius = '0px'; }
           setTimeout(onDone, D + 40);
         }, D);
       }, D);

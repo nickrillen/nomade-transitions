@@ -38,12 +38,18 @@
   function theme() { try { if (!_meta) { _meta = d.querySelector('meta[name="theme-color"]'); if (!_meta) { _meta = d.createElement('meta'); _meta.setAttribute('name', 'theme-color'); (d.head || d.documentElement).appendChild(_meta); } } _meta.setAttribute('content', '#000'); } catch (e) {} } // top bar always black (any state)
   function pageBg() { try { var c = getComputedStyle(d.body).backgroundColor; if (c && c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent') return c; } catch (e) {} return '#FAF8F3'; }
   // iOS/mobile only: black top frame with 40px rounded content corners (sticky), content scrolls under
+  var BAND = 24, RAD = 24;                            // black band height + corner radius (mobile)
   function frame() {
     if (!matchMedia('(pointer:coarse)').matches) return;
     d.documentElement.style.background = '#000';
+    if (d.body) d.body.style.paddingTop = BAND + 'px';  // nudge content below the black band
     if (d.getElementById('nmdw-frame')) return;
     var f = d.createElement('div'); f.id = 'nmdw-frame';
-    f.style.cssText = 'position:fixed;top:0;left:0;right:0;height:40px;pointer-events:none;z-index:2147483640;background:radial-gradient(40px 40px at 40px 40px,transparent 39px,#000 40px) top left/40px 40px no-repeat,radial-gradient(40px 40px at 0 40px,transparent 39px,#000 40px) top right/40px 40px no-repeat';
+    f.style.cssText = 'position:fixed;top:0;left:0;right:0;height:' + (BAND + RAD) + 'px;pointer-events:none;z-index:2147483640;' +
+      'background:' +
+      'linear-gradient(#000,#000) top/100% ' + BAND + 'px no-repeat,' +
+      'radial-gradient(' + RAD + 'px ' + RAD + 'px at ' + RAD + 'px ' + RAD + 'px,transparent ' + (RAD - 1) + 'px,#000 ' + RAD + 'px) bottom left/' + RAD + 'px ' + RAD + 'px no-repeat,' +
+      'radial-gradient(' + RAD + 'px ' + RAD + 'px at 0 ' + RAD + 'px,transparent ' + (RAD - 1) + 'px,#000 ' + RAD + 'px) bottom right/' + RAD + 'px ' + RAD + 'px no-repeat';
     d.documentElement.appendChild(f);
   }
 

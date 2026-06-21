@@ -351,26 +351,36 @@
     el.appendChild(sp); el.appendChild(lg);
     return { el: el };
   }
+  function introHolder(off) {
+    var W = window.innerWidth, H = window.innerHeight;
+    var holder = d.createElement('div');
+    holder.style.cssText = 'position:fixed;left:0;top:0;width:' + W + 'px;height:' + H + 'px;z-index:1;transform-origin:50% 50%;will-change:transform';
+    var c = card(W, H, '');                       // same rounded card as page transitions
+    var inner = d.createElement('div');
+    inner.style.cssText = 'position:absolute;left:0;top:0;width:100%;transform:translateY(' + (-off) + 'px)';
+    inner.appendChild(d.body.cloneNode(true));     // snapshot of the current page
+    c.clip.appendChild(inner);
+    holder.appendChild(c.wrap);
+    return { holder: holder, clip: c.clip, W: W, H: H };
+  }
   function introIn() {
-    var L = buildLoader(); d.documentElement.appendChild(L.el);
-    var b = d.body, H = window.innerHeight;
-    b.style.transformOrigin = '50% ' + (H / 2) + 'px';
-    b.style.position = 'relative'; b.style.zIndex = '1';
-    b.style.transition = 'none'; b.style.transform = 'translateY(' + H + 'px) scale(0.25)'; b.style.opacity = '1';
-    d.documentElement.className = d.documentElement.className.replace(/\s*nmdw-pre/, '');
+    var L = buildLoader(); d.documentElement.appendChild(L.el);     // dark loader behind (z0)
+    var x = introHolder(0); d.documentElement.appendChild(x.holder);
+    x.holder.style.transform = 'translateY(' + x.H + 'px) scale(0.25)'; // small, below
     var t0 = Date.now(), min = 900;
     function start() {
       raf(function () { raf(function () {
-        b.style.transition = 'transform 750ms ' + E;
-        b.style.transform = 'translateY(0px) scale(0.25)';          // rise to centre, small
+        x.holder.style.transition = 'transform 750ms ' + E;
+        x.holder.style.transform = 'translateY(0px) scale(0.25)';   // rise to centre as a card
         setTimeout(function () {
-          b.style.transition = 'transform 650ms ' + E;
-          b.style.transform = 'none';                                // expand to full
-          L.el.style.transition = 'opacity 400ms ease'; L.el.style.opacity = '0';
+          x.holder.style.transition = 'transform 650ms ' + E;
+          x.holder.style.transform = 'scale(1)';                    // expand to full
+          x.clip.style.transition = 'border-radius 650ms ' + E; x.clip.style.borderRadius = '0px';
           setTimeout(function () {
+            d.documentElement.className = d.documentElement.className.replace(/\s*nmdw-pre/, ''); // reveal real page
+            if (x.holder.parentNode) x.holder.parentNode.removeChild(x.holder);
             if (L.el.parentNode) L.el.parentNode.removeChild(L.el);
-            b.style.position = ''; b.style.zIndex = ''; b.style.transition = ''; b.style.transform = ''; b.style.transformOrigin = '';
-          }, 660);
+          }, 680);
         }, 800);
       }); });
     }
@@ -380,16 +390,17 @@
   function introOut(cb) {
     if (busy) return; busy = true;
     var L = buildLoader(); d.documentElement.appendChild(L.el);
-    var b = d.body, y = pageYOffset, H = window.innerHeight;
-    b.style.transformOrigin = '50% ' + (y + H / 2) + 'px';
-    b.style.position = 'relative'; b.style.zIndex = '1';
-    b.style.transition = 'none'; b.style.transform = 'none';
+    var x = introHolder(pageYOffset); d.documentElement.appendChild(x.holder);
+    x.clip.style.borderRadius = '0px';                              // starts as full page (square)
+    d.body.style.opacity = '0';                                     // hide real page behind the card
+    x.holder.style.transform = 'scale(1)';
     raf(function () { raf(function () {
-      b.style.transition = 'transform 600ms ' + E;
-      b.style.transform = 'translateY(0px) scale(0.25)';            // shrink 4x, centred
+      x.holder.style.transition = 'transform 600ms ' + E;
+      x.holder.style.transform = 'translateY(0px) scale(0.25)';     // shrink to a card
+      x.clip.style.transition = 'border-radius 600ms ' + E; x.clip.style.borderRadius = R + 'px';
       setTimeout(function () {
-        b.style.transition = 'transform 600ms ' + E;
-        b.style.transform = 'translateY(' + H + 'px) scale(0.25)';  // drop down, loader shows
+        x.holder.style.transition = 'transform 600ms ' + E;
+        x.holder.style.transform = 'translateY(' + x.H + 'px) scale(0.25)'; // drop down, loader shows
         setTimeout(function () { if (cb) cb(); }, 620);
       }, 640);
     }); });
@@ -401,7 +412,7 @@
   ss('nmdw_seen', '1');
   if (INTRO) {
     var pre = d.createElement('style');
-    pre.textContent = 'html.nmdw-pre{background:#111}html.nmdw-pre body{opacity:0}';
+    pre.textContent = 'html.nmdw-pre{background:#111}html.nmdw-pre>body{opacity:0}';
     (d.head || d.documentElement).appendChild(pre);
     d.documentElement.className += ' nmdw-pre';
   }

@@ -370,11 +370,11 @@
     var t0 = Date.now(), min = 900;
     function start() {
       raf(function () { raf(function () {
-        x.holder.style.transition = 'transform 750ms ' + E;
-        x.holder.style.transform = 'translateY(0px) scale(0.25)';   // rise to centre as a card
+        x.holder.style.transition = 'transform 800ms ' + E;
+        x.holder.style.transform = 'translateY(' + (x.H * 0.22) + 'px) scale(0.25)'; // peek up from bottom (~lower half)
         setTimeout(function () {
-          x.holder.style.transition = 'transform 650ms ' + E;
-          x.holder.style.transform = 'scale(1)';                    // expand to full
+          x.holder.style.transition = 'transform 700ms ' + E;
+          x.holder.style.transform = 'scale(1)';                    // then expand to full
           x.clip.style.transition = 'border-radius 650ms ' + E; x.clip.style.borderRadius = '0px';
           setTimeout(function () {
             d.documentElement.className = d.documentElement.className.replace(/\s*nmdw-pre/, ''); // reveal real page

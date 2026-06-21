@@ -410,6 +410,16 @@
   }
   window.nmdwIntro = { in: introIn, out: introOut };
 
+  // plain full-page load (no intro, no deck): fade the page in from opacity 0 + blur 10
+  function simpleIn() {
+    var b = d.body, h = d.documentElement;
+    raf(function () { raf(function () {
+      b.style.transition = 'opacity 700ms ease, filter 700ms ease';
+      h.className = h.className.replace(/\s*nmdw-fade/, '');
+      setTimeout(function () { b.style.transition = ''; b.style.filter = ''; }, 760);
+    }); });
+  }
+
   // ---------- boot ----------
   var INTRO = shouldIntro();
   ss('nmdw_seen', '1');
@@ -418,9 +428,14 @@
     pre.textContent = 'html.nmdw-pre{background:#111}html.nmdw-pre>body{opacity:0}';
     (d.head || d.documentElement).appendChild(pre);
     d.documentElement.className += ' nmdw-pre';
+  } else {
+    var fst = d.createElement('style');
+    fst.textContent = 'html.nmdw-fade>body{opacity:0;filter:blur(10px)}';
+    (d.head || d.documentElement).appendChild(fst);
+    d.documentElement.className += ' nmdw-fade';
   }
   function boot() {
-    if (INTRO) introIn();
+    if (INTRO) introIn(); else simpleIn();
     if (is404()) {
       d.addEventListener('click', function (e) {
         var a = e.target.closest ? e.target.closest('a') : null;

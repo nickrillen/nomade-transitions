@@ -116,17 +116,20 @@
       var t = span / 2 - (idx * step + span / 2) * s;
       return (axis === 'x' ? 'translateX(' + t + 'px)' : 'translateY(' + t + 'px)') + ' scale(' + s + ')';
     }
+    var ac = cards[ai] && cards[ai].children[0];       // starting card's clip
+    if (ac) ac.style.borderRadius = '0px';             // start square = matches current page (no corner flash)
     k.style.transform = st(ai, 1);
     d.body.appendChild(o);
     raf(function () { raf(function () {
       k.style.transition = 'transform ' + D + 'ms ' + E;
       k.style.transform = st(ai, S);
+      if (ac) { ac.style.transition = 'border-radius ' + D + 'ms ' + E; ac.style.borderRadius = R + 'px'; } // round as it shrinks
       setTimeout(function () {
         k.style.transform = st(bi, S);
         setTimeout(function () {
           k.style.transform = st(bi, 1);
           var tc = cards[bi] && cards[bi].children[0];   // active card's clip
-          if (tc) { tc.style.transition = 'border-radius ' + D + 'ms ' + E; tc.style.borderRadius = '0px'; }
+          if (tc) { tc.style.transition = 'border-radius ' + D + 'ms ' + E; tc.style.borderRadius = '0px'; } // unround as it fills
           setTimeout(onDone, D + 40);
         }, D);
       }, D);
@@ -395,14 +398,14 @@
     d.body.style.opacity = '0';                                     // hide real page behind the card
     x.holder.style.transform = 'scale(1)';
     raf(function () { raf(function () {
-      x.holder.style.transition = 'transform 600ms ' + E;
-      x.holder.style.transform = 'translateY(0px) scale(0.25)';     // shrink to a card
-      x.clip.style.transition = 'border-radius 600ms ' + E; x.clip.style.borderRadius = R + 'px';
+      x.holder.style.transition = 'transform 1400ms ' + E;
+      x.holder.style.transform = 'translateY(' + (x.H * 0.5) + 'px) scale(0.25)'; // shrink to the peek (mirror of intro)
+      x.clip.style.transition = 'border-radius 1400ms ' + E; x.clip.style.borderRadius = R + 'px';
       setTimeout(function () {
-        x.holder.style.transition = 'transform 600ms ' + E;
-        x.holder.style.transform = 'translateY(' + x.H + 'px) scale(0.25)'; // drop down, loader shows
-        setTimeout(function () { if (cb) cb(); }, 620);
-      }, 640);
+        x.holder.style.transition = 'transform 1600ms ' + E;
+        x.holder.style.transform = 'translateY(' + x.H + 'px) scale(0.25)'; // drop below, loader shows
+        setTimeout(function () { if (cb) cb(); }, 1620);
+      }, 1500);
     }); });
   }
   window.nmdwIntro = { in: introIn, out: introOut };

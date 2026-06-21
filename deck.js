@@ -370,18 +370,18 @@
     var t0 = Date.now(), min = 900;
     function start() {
       raf(function () { raf(function () {
-        x.holder.style.transition = 'transform 800ms ' + E;
-        x.holder.style.transform = 'translateY(' + (x.H * 0.22) + 'px) scale(0.25)'; // peek up from bottom (~lower half)
+        x.holder.style.transition = 'transform 1600ms ' + E;
+        x.holder.style.transform = 'translateY(' + (x.H * 0.5) + 'px) scale(0.25)'; // peek: ~half the card above the bottom edge
         setTimeout(function () {
-          x.holder.style.transition = 'transform 700ms ' + E;
+          x.holder.style.transition = 'transform 1400ms ' + E;
           x.holder.style.transform = 'scale(1)';                    // then expand to full
-          x.clip.style.transition = 'border-radius 650ms ' + E; x.clip.style.borderRadius = '0px';
+          x.clip.style.transition = 'border-radius 1400ms ' + E; x.clip.style.borderRadius = '0px';
           setTimeout(function () {
             d.documentElement.className = d.documentElement.className.replace(/\s*nmdw-pre/, ''); // reveal real page
             if (x.holder.parentNode) x.holder.parentNode.removeChild(x.holder);
             if (L.el.parentNode) L.el.parentNode.removeChild(L.el);
-          }, 680);
-        }, 800);
+          }, 1420);
+        }, 1700);
       }); });
     }
     function fire() { setTimeout(start, Math.max(0, min - (Date.now() - t0))); }

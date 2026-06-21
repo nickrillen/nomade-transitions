@@ -11,10 +11,12 @@
   var busy = false;
 
   var MAIN = [
-    ['/', 'Home'], ['/about', 'About'], ['/services', 'Services'],
-    ['/solutions-list', 'Solutions'], ['/quick-wins-list', 'Quick Wins'],
-    ['/pricing', 'Pricing'], ['/work', 'Work'], ['/contact', 'Contact']
+    ['/', 'Home'], ['/services', 'Services'], ['/work', 'Work'],
+    ['/quick-wins-list', 'Quick Wins'], ['/solutions-list', 'Solutions'],
+    ['/pricing', 'Pricing'], ['/about', 'About'], ['/contact', 'Contact']
   ];
+  // 404 page ids (data-wf-page) — never animate to/from these; behave as plain return-to-site
+  var P404 = ['6a1a14c59d8a242efacc9a00', '6a1a09712ebe57c2bc195bb6'];
   var CMS = [
     { pfx: '/quick-wins/', list: '/quick-wins-list' },
     { pfx: '/solutions/', list: '/solutions-list' },
@@ -30,6 +32,8 @@
   function laneIndex(lane, p) { p = norm(p); for (var i = 0; i < lane.length; i++) if (norm(lane[i][0]) === p) return i; return -1; }
   function vw() { return window.innerWidth; }
   function vh() { return window.innerHeight; }
+  function pageId(doc) { return (doc || d).documentElement.getAttribute('data-wf-page'); }
+  function is404(doc) { return P404.indexOf(pageId(doc)) >= 0; }
 
   // ---------- doc cache (live previews) ----------
   var cache = {};
@@ -159,7 +163,7 @@
     var W = vw(), H = vh();
     Promise.all([getDoc(tp), resolve(MAIN.map(function (m) { return m[0]; }))]).then(function (res) {
       var tdoc = res[0], mdocs = res[1];
-      if (!tdoc) { location.href = url; return; }
+      if (!tdoc || is404(tdoc)) { location.href = url; return; }
       if (ci < 0 || ti < 0) {
         var f = [snapCard(W, H, curLabel()), docCard(tdoc, W, H, ti >= 0 ? MAIN[ti][1] : (tdoc.title || ''))];
         runDeck('y', f, 0, 1, function () { swp(tdoc, url, true); }); return;
@@ -176,7 +180,7 @@
     var W = vw(), H = vh();
     Promise.all([getDoc(tp), getDoc(t.list)]).then(function (r) {
       var tdoc = r[0], ldoc = r[1];
-      if (!tdoc) { location.href = url; return; }
+      if (!tdoc || is404(tdoc)) { location.href = url; return; }
       var lane = ldoc ? scrapeLane(ldoc, t.pfx) : [];
       var ti = laneIndex(lane, tp);
       if (ti < 0) { lane = [[tp, (tdoc.title || '').split('|')[0].trim()]]; ti = 0; }
@@ -219,8 +223,6 @@
       getDoc(listPath).then(function (ld) { if (ld) resolve(scrapeLane(ld, pfx).map(function (x) { return x[0]; })); });
     }
   }
-  (window.requestIdleCallback || function (f) { setTimeout(f, 1500); })(prefetch);
-
   // ---------- wiring ----------
   function ok(a, e) {
     if (!a || e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return false;
@@ -231,9 +233,12 @@
     var u; try { u = new URL(a.href, location.href); } catch (e2) { return false; }
     return u.origin === location.origin && u.pathname !== location.pathname;
   }
-  d.addEventListener('click', function (e) {
-    var a = e.target.closest ? e.target.closest('a') : null;
-    if (ok(a, e)) { e.preventDefault(); go(a.href); }
-  });
-  addEventListener('popstate', function () { location.reload(); });
+  if (!is404()) {
+    d.addEventListener('click', function (e) {
+      var a = e.target.closest ? e.target.closest('a') : null;
+      if (ok(a, e)) { e.preventDefault(); go(a.href); }
+    });
+    addEventListener('popstate', function () { location.reload(); });
+    (window.requestIdleCallback || function (f) { setTimeout(f, 1500); })(prefetch);
+  }
 })();

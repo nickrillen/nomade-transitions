@@ -34,8 +34,14 @@
   function vh() { return window.innerHeight; }
   function pageId(doc) { return (doc || d).documentElement.getAttribute('data-wf-page'); }
   function is404(doc) { return P404.indexOf(pageId(doc)) >= 0; }
-  var _meta;
-  function theme() { try { if (!_meta) { _meta = d.querySelector('meta[name="theme-color"]'); if (!_meta) { _meta = d.createElement('meta'); _meta.setAttribute('name', 'theme-color'); (d.head || d.documentElement).appendChild(_meta); } } _meta.setAttribute('content', '#000'); } catch (e) {} } // top bar always black (any state)
+  function theme() { // force a single, clean black theme-color (drop any Webflow/media variants)
+    try {
+      var ms = d.querySelectorAll('meta[name="theme-color"]');
+      for (var i = 0; i < ms.length; i++) ms[i].parentNode.removeChild(ms[i]);
+      var m = d.createElement('meta'); m.setAttribute('name', 'theme-color'); m.setAttribute('content', '#000000');
+      (d.head || d.documentElement).appendChild(m);
+    } catch (e) {}
+  }
   function pageBg() { try { var c = getComputedStyle(d.body).backgroundColor; if (c && c !== 'rgba(0, 0, 0, 0)' && c !== 'transparent') return c; } catch (e) {} return '#FAF8F3'; }
   // iOS/mobile only: black top frame with 40px rounded content corners (sticky), content scrolls under
   var RAD = 24;                                       // corner radius (mobile)

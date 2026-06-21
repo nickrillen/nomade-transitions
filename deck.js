@@ -175,7 +175,7 @@
   function startAuto(s) {
     var url = s.getAttribute('data-next') || nameToUrl(s.textContent);
     if (!url || norm(new URL(url, location.href).pathname) === norm(location.pathname)) return;
-    var dur = parseFloat(s.getAttribute('data-duration')); dur = dur ? (dur < 100 ? dur * 1000 : dur) : 3000;
+    var dur = parseFloat(s.getAttribute('data-duration')); dur = dur ? (dur < 100 ? dur * 1000 : dur) : 6000;
     var l = s.querySelector('.next-step-loading-line');
     if (l) { l.style.transition = 'none'; l.style.width = '0%'; void l.offsetWidth; l.style.transition = 'width ' + dur + 'ms linear'; l.style.width = '100%'; }
     s.__t = setTimeout(function () { s.__fired = 1; revealTo(url, s); }, dur);
@@ -184,30 +184,38 @@
     if (busy) return; busy = true;
     var bg = getComputedStyle(sec).backgroundColor;
     if (!bg || bg === 'rgba(0, 0, 0, 0)' || bg === 'transparent') bg = '#FAF8F3';
-    var ov = d.createElement('div');
-    ov.style.cssText = 'position:fixed;inset:0;background:' + bg + ';opacity:0;z-index:2147483647;transition:opacity 500ms ease;pointer-events:none';
-    d.documentElement.appendChild(ov);          // on <html> so body swap won't remove it
-    raf(function () { ov.style.opacity = '1'; });
-    getDoc(url).then(function (doc) {
-      if (!doc || is404(doc)) { location.href = url; return; }
+    var docP = getDoc(url);                         // start fetching the next page now
+    // Phase A: fade out the progress line + text inside the section
+    [].forEach.call(sec.children, function (c) { c.style.transition = 'opacity 350ms ease'; c.style.opacity = '0'; });
+    setTimeout(function () {
+      // Phase B: the white panel expands from the section's rect to full viewport (100svh)
+      var r = sec.getBoundingClientRect();
+      var ov = d.createElement('div');
+      ov.style.cssText = 'position:fixed;left:' + r.left + 'px;top:' + r.top + 'px;width:' + r.width + 'px;height:' + r.height +
+        'px;background:' + bg + ';z-index:2147483647;pointer-events:none;transition:left 650ms ' + E + ',top 650ms ' + E + ',width 650ms ' + E + ',height 650ms ' + E;
+      d.documentElement.appendChild(ov);            // on <html> so body swap won't remove it
+      raf(function () { raf(function () {
+        ov.style.left = '0px'; ov.style.top = '0px'; ov.style.width = window.innerWidth + 'px'; ov.style.height = window.innerHeight + 'px';
+      }); });
+      // Phase C: once covered, swap content and reveal from opacity 0 + blur 10
       setTimeout(function () {
-        applyDoc(doc, url, true);                // swap under the white cover
-        d.body.style.transition = 'none';
-        d.body.style.opacity = '0';
-        d.body.style.filter = 'blur(10px)';
-        raf(function () { raf(function () {
-          d.body.style.transition = 'opacity 700ms ease, filter 700ms ease';
-          d.body.style.opacity = '1';
-          d.body.style.filter = 'blur(0px)';
-          ov.style.opacity = '0';
-          setTimeout(function () {
-            if (ov.parentNode) ov.parentNode.removeChild(ov);
-            d.body.style.transition = ''; d.body.style.filter = ''; d.body.style.opacity = '';
-            busy = false;
-          }, 740);
-        }); });
-      }, 520);
-    }).catch(function () { location.href = url; });
+        docP.then(function (doc) {
+          if (!doc || is404(doc)) { location.href = url; return; }
+          applyDoc(doc, url, true);
+          d.body.style.transition = 'none'; d.body.style.opacity = '0'; d.body.style.filter = 'blur(10px)';
+          raf(function () { raf(function () {
+            d.body.style.transition = 'opacity 700ms ease, filter 700ms ease';
+            d.body.style.opacity = '1'; d.body.style.filter = 'blur(0px)';
+            ov.style.transition = 'opacity 500ms ease'; ov.style.opacity = '0';
+            setTimeout(function () {
+              if (ov.parentNode) ov.parentNode.removeChild(ov);
+              d.body.style.transition = ''; d.body.style.filter = ''; d.body.style.opacity = '';
+              busy = false;
+            }, 720);
+          }); });
+        }).catch(function () { location.href = url; });
+      }, 690);
+    }, 360);
   }
   function curLabel() {
     var mi = mainIndex(location.pathname);

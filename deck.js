@@ -73,7 +73,7 @@
     if (label) {
       var cap = d.createElement('div');
       cap.textContent = label;
-      cap.style.cssText = 'position:absolute;left:0;right:0;top:100%;margin-top:20px;text-align:center;font-family:inherit;font-weight:600;font-size:14px;letter-spacing:.16em;text-transform:uppercase;color:#FAF8F3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 8%';
+      cap.style.cssText = 'position:absolute;left:0;right:0;top:100%;margin-top:10px;text-align:center;font-family:inherit;font-weight:400;font-size:14px;letter-spacing:.16em;text-transform:uppercase;color:#FAF8F3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 8%';
       wrap.appendChild(cap);
     }
     return { wrap: wrap, clip: clip };
@@ -204,11 +204,31 @@
     });
   }
 
+  // CMS item -> its own parent listing: stay horizontal, slide back to the first (parent) card
+  function goHorizontalBack(url, cc) {
+    var W = vw(), H = vh();
+    getDoc(cc.list).then(function (ldoc) {
+      if (!ldoc || is404(ldoc)) { location.href = url; return; }
+      var lane = scrapeLane(ldoc, cc.pfx);
+      var ci = laneIndex(lane, location.pathname);
+      resolve(lane.map(function (x) { return x[0]; })).then(function (idocs) {
+        var mi = mainIndex(cc.list);
+        var listLabel = mi >= 0 ? MAIN[mi][1] : (ldoc.title || '');
+        var cards = [docCard(ldoc, W, H, listLabel)].concat(lane.map(function (it, i) {
+          return i === ci ? snapCard(W, H, it[1]) : docCard(idocs[i], W, H, it[1]);
+        }));
+        runDeck('x', cards, ci >= 0 ? (1 + ci) : 0, 0, function () { swp(ldoc, url, true); });
+      });
+    });
+  }
+
   function go(url) {
     if (busy) return; busy = true;
     var tp; try { tp = norm(new URL(url, location.href).pathname); } catch (e) { location.href = url; return; }
-    var t = cmsOf(tp);
-    if (t) goHorizontal(url, tp, t); else goVertical(url, tp);
+    var t = cmsOf(tp), cc = cmsOf(location.pathname);
+    if (t) goHorizontal(url, tp, t);
+    else if (cc && norm(tp) === norm(cc.list)) goHorizontalBack(url, cc);
+    else goVertical(url, tp);
   }
 
   // ---------- prefetch (so previews are ready) ----------
